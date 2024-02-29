@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="container-fluid">
+<ul><li><strong>Admin Dashboard</strong></li></ul>
+<ul><li><a href="#add">Add New Item</a></li><li><a href="#update">Update Item</a></li><li><a href="#delete" role="button">Delete Item</a></li></ul>
+</nav>
+<main class="container">
+    <div class="grid">
+        <details open>
+            <summary><h2>Add New Item</h2></summary>
+            <section id="add">
+                <form action="/items" method="POST">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="images" class="form-label">Image URLs (comma separated)</label>
+                <input type="text" class="form-control" id="images" name="images">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Item</button>
+        </form>
+            </section>
+        </details>
+        <details>
+            <summary><h2>Update Item</h2></summary>
+            <section id="update">
+                <form id="updateForm" action="/items/update/:id" method="POST">
+            <div class="mb-3">
+                <label for="updateId" class="form-label">Item ID</label>
+                <input type="text" class="form-control" id="updateId" name="id" required>
+            </div>
+            <div class="mb-3">
+                <label for="updateTitle" class="form-label">Title</label>
+                <input type="text" class="form-control" id="updateTitle" name="title">
+            </div>
+            <div class="mb-3">
+                <label for="updateDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="updateDescription" name="description" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="updateImages" class="form-label">Image URLs (comma separated)</label>
+                <input type="text" class="form-control" id="updateImages" name="images">
+            </div>
+            <button type="submit" class="btn btn-warning">Update Item</button>
+        </form>
+            </section>
+        </details>
+        <details>
+            <summary><h2>Delete Item</h2></summary>
+            <section id="delete">
+                <form action="/items/delete" method="POST">
+            <div class="mb-3">
+                <label for="deleteId" class="form-label">Item ID</label>
+                <input type="text" class="form-control" id="deleteId" name="id" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Delete Item</button>
+        </form>
+            </section>
+        </details>
+        <details>
+            <summary><h2>View Items</h2></summary>
+            <section id="view">
+                <button id="loadItems" class="btn">Load Items</button>
+                <div id="itemsList"></div>
+            </section>
+        </details>
+    </div>
+</main>
+<script>
+document.getElementById('loadItems').addEventListener('click', function() {
+    fetch('/items')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const itemsList = document.getElementById('itemsList');
+            itemsList.innerHTML = ''; // Clear the list before displaying new items
+            data.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                // Displaying only MongoDB ID and Title, with numeration
+                listItem.textContent = `${index + 1}. ID: ${item._id}, Title: ${item.title}`;
+                itemsList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error('There was a problem with your fetch operation:', error);
+        });
+});
+
+</script>
+
+    </script>
+    <script>
+        document.getElementById('updateForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            
+            const itemId = document.getElementById('updateId').value;
+            const title = document.getElementById('updateTitle').value;
+            const description = document.getElementById('updateDescription').value;
+            const images = document.getElementById('updateImages').value; // Assuming images are comma-separated URLs
+        
+            fetch(`/items/${itemId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    images: images.split(',').map(image => image.trim()), // Convert string to array, if necessary
+                }),
+            })
+            .then(response => {
+                if(response.ok) {
+                    console.log('Item updated successfully');
+                    // Optionally, refresh the page or update the UI accordingly
+                } else {
+                    console.error('Error updating item');
+                }
+            })
+            .catch(error => console.error('Fetch error:', error));
+        });
+        </script>
+        
+<footer class="container"><small><a href="#">Privacy Policy</a> • <a href="#">Terms of Use</a></small></footer>
+</body>
+</html>
